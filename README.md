@@ -1,5 +1,4 @@
-# dotnet-7-jwt-authentication-api
+# dotnet-7
 
-.NET 7.0 - JWT Authentication API
-
-Documentation at https://jasonwatmore.com/net-7-csharp-jwt-authentication-tutorial-without-aspnet-core-identity
+# run
+- dotnet watch run

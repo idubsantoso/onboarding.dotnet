@@ -2,6 +2,7 @@
 
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Authorization;
+using WebApi.Dto;
 using WebApi.Models;
 using WebApi.Services;
 
@@ -15,6 +16,13 @@ public class UsersController : ControllerBase
     public UsersController(IUserService userService)
     {
         _userService = userService;
+    }
+
+    [AllowAnonymous]
+    [HttpPost]
+    public async Task<ActionResult<ServiceResponse<List<UserDto>>>> AddUser(UserDto newUser)
+    {
+        return Ok(await _userService.CreateNewUser(newUser));
     }
 
     [AllowAnonymous]
