@@ -10,6 +10,7 @@ namespace WebApi.Services
     public interface IBookService
     {
         Task<ServiceResponse<BookDto>> AddNewBook(BookDto dto);
+        Task<ServiceResponse<BookDto>> UpdateBook(UpdateBook updateBook);
         Task<ServiceResponse<List<BookDto>>> GetAllBooks();
         Task<ServiceResponse<BookDto>> GetBookById(int id);
     }

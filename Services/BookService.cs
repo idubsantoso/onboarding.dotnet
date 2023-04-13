@@ -8,7 +8,7 @@ using WebApi.Data;
 using WebApi.Dto;
 using WebApi.Entities;
 using WebApi.Models;
-using WebApi.Services;
+using WebApi.Exceptions;
 
 namespace WebApi.Services
 {
@@ -41,6 +41,36 @@ namespace WebApi.Services
             await _context.SaveChangesAsync();
             serviceResponse.Data = dto;
             return serviceResponse;
+        }
+
+        public async Task<ServiceResponse<BookDto>> UpdateBook(UpdateBook updateBook)
+        {
+            var serviceResponse = new ServiceResponse<BookDto>();
+
+            try 
+            {
+                var dbBook = await _context.Books.FirstOrDefaultAsync(c => c.Id == updateBook.Id);
+                if(dbBook is null)
+                    throw new NotFoundException($"Character with Id '{updateBook.Id}' not found.");
+                
+                // _mapper.Map(updateCharacter, character);
+
+                dbBook.Author = updateBook.Author;
+                dbBook.Description = updateBook.Description;
+                dbBook.Title = updateBook.Title;
+                dbBook.Category = updateBook.Category;
+                dbBook.TotalPages = updateBook.TotalPages;
+
+                await _context.SaveChangesAsync();
+
+                serviceResponse.Data = _mapper.Map<BookDto>(dbBook);
+
+                return serviceResponse;
+            }
+            catch (Exception ex)
+            {
+                throw new InternalServerException(ex.Message);
+            }
         }
 
         public async Task<ServiceResponse<List<BookDto>>> GetAllBooks()

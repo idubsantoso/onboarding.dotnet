@@ -7,6 +7,7 @@ using WebApi.Dto;
 using WebApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Models;
+using WebApi.Queue;
 
 namespace WebApi.Controllers
 {
@@ -16,9 +17,11 @@ namespace WebApi.Controllers
     public class BookAuthorController : ControllerBase
     {
         private readonly IBookService _bookService;
-        public BookAuthorController(IBookService bookService)
+        private readonly IBackgroundTaskQueue<BookDto> _queue;
+        public BookAuthorController(IBookService bookService, IBackgroundTaskQueue<BookDto> queue)
         {
             _bookService = bookService;
+            _queue = queue;
         }
 
         [HttpGet("GetAll")]
@@ -35,6 +38,22 @@ namespace WebApi.Controllers
         public async Task<ActionResult<ServiceResponse<List<BookDto>>>> AddBook(BookDto newBook)
         {
             return Ok(await _bookService.AddNewBook(newBook));
+        }
+
+        [HttpPut]
+        public async Task<ActionResult<ServiceResponse<List<BookDto>>>> UpdateCharacter(UpdateBook updateBook)
+        {
+            return Ok(await _bookService.UpdateBook(updateBook));
+        }
+
+        [HttpPost("queue")]
+        public async Task<IActionResult> saveBook([FromBody] List<BookDto> books)
+        {
+            for(int i = 0; i < books.Capacity; i++){
+                _queue.Enqueue(books[i]);
+            }
+            
+            return Accepted();
         }
         
     }

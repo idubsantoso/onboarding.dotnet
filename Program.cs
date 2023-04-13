@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using WebApi.Authorization;
 using WebApi.Data;
+using WebApi.Dto;
 using WebApi.Helpers;
 using WebApi.Queue;
 using WebApi.Services;
@@ -25,17 +26,9 @@ var builder = WebApplication.CreateBuilder(args);
     services.AddScoped<IBookService, BookService>();
     services.AddHttpClient();
 
-    services.AddSingleton<MonitorLoop>();
-    services.AddHostedService<QueuedHostedService>();
-    services.AddSingleton<IBackgroundTaskQueue>(_ => 
-    {
-        if (!int.TryParse(builder.Configuration["QueueCapacity"], out var queueCapacity))
-        {
-            queueCapacity = 100;
-        }
-
-        return new DefaultBackgroundTaskQueue(queueCapacity);
-    });
+    services
+        .AddHostedService<QueuedHostedService>()
+        .AddSingleton<IBackgroundTaskQueue<BookDto>, DefaultBackgroundTaskQueue<BookDto>>();
 }
 
 var app = builder.Build();
@@ -53,7 +46,5 @@ var app = builder.Build();
 
     app.MapControllers();
 }
-MonitorLoop monitorLoop = app.Services.GetRequiredService<MonitorLoop>()!;
-monitorLoop.StartMonitorLoop();
 
 app.Run("http://localhost:5000");

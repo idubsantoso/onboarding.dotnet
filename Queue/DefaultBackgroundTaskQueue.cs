@@ -1,42 +1,31 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using WebApi.Services;
 
 namespace WebApi.Queue
 {
-    public sealed class DefaultBackgroundTaskQueue : IBackgroundTaskQueue
+    public sealed class DefaultBackgroundTaskQueue<T> : IBackgroundTaskQueue<T> where T : class
     {
-        private readonly Channel<Func<CancellationToken, ValueTask>> _queue;
+        private readonly ConcurrentQueue<T> _items = new ConcurrentQueue<T>();
 
-        public DefaultBackgroundTaskQueue(int capacity)
-        {
-            BoundedChannelOptions options = new(capacity)
-            {
-                FullMode = BoundedChannelFullMode.Wait
-            };
-            _queue = Channel.CreateBounded<Func<CancellationToken, ValueTask>>(options);
-        }
+    public void Enqueue(T item)
+    {
+        if (item == null) throw new ArgumentNullException(nameof(item));
 
-        public async ValueTask QueueBackgroundWorkItemAsync(
-            Func<CancellationToken, ValueTask> workItem)
-        {
-            if (workItem is null)
-            {
-                throw new ArgumentNullException(nameof(workItem));
-            }
+        _items.Enqueue(item);
+    }
 
-            await _queue.Writer.WriteAsync(workItem);
-        }
+    public T? Dequeue()
+    {
+        var success = _items.TryDequeue(out var workItem);
 
-        public async ValueTask<Func<CancellationToken, ValueTask>> DequeueAsync(
-            CancellationToken cancellationToken)
-        {
-            Func<CancellationToken, ValueTask>? workItem =
-                await _queue.Reader.ReadAsync(cancellationToken);
-
-            return workItem;
-        }
+        return success
+            ? workItem
+            : null;
+    }
     }
 }
