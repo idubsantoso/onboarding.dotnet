@@ -41,7 +41,7 @@ namespace WebApi.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult<ServiceResponse<List<BookDto>>>> UpdateCharacter(UpdateBook updateBook)
+        public async Task<ActionResult<ServiceResponse<List<BookDto>>>> UpdateBook(UpdateBook updateBook)
         {
             return Ok(await _bookService.UpdateBook(updateBook));
         }
